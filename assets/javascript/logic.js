@@ -1,54 +1,51 @@
-// $(function(){
-//     renderButtons(artists, '.person-btn', '#buttonsView')
+// $(function () {
+//     renderButtons(artists, 'searchButton','#buttonsView');
+// })
 
 var artists = ["Adele", "Michael Jackson"];
 
-// displayMovieInfo function re-renders the HTML to display the appropriate content
-$("button").on("click", function() {
-
+//capture artist name function
+//function alertArtistName() {
+function displayArtistInfo(){
+    
     var person = $(this).attr("data-person");
-    var queryURL = "https://api.giphy.com/v1/gifs/search?q=" + person + "&api_key=LD6nX1GHMQlF3fLtWdA3FN22QWSLem8n&limit=3";
+    var queryURL = "https://api.giphy.com/v1/gifs/search?q=" +
+      person + "&api_key=LD6nX1GHMQlF3fLtWdA3FN22QWSLem8n&limit=3";
 
-    // Creates AJAX call for the specific movie button being clicked
     $.ajax({
-        url: queryURL,
-        method: "GET"
-    })
-    .then(function (response) {
+      url: queryURL,
+      method: "GET"
+    }).then(function(response) {
         var results = response.data;
-        for (var i = 0; i < results.length; i++) {
-            var gifDiv = $("<div>");
-            var rating = results[i].rating;
-            var p = $("<p>").text("Rating: " + rating);
 
-            var personImage = $("<img>");
-            personImage.attr("src", results[i].images.fixed_height.url);
+            // for (var i = 0; i < results.length; i++) {
+                var gifDiv = $("<div>").addClass('artist');
+                var rating = results[i].rating;
+                var p = $("<p>").text("Rating: " + rating);
+                var image = $('<img>');
+                image.attr("src", results[i].images.fixed_height.url);
+                image.attr("data-animate", results[i].images.fixed_height.url);
+                image.attr("data-still", results[i].images.fixed_height_still.url);
+                image.attr("data-state", 'still');
+                gifDiv.append(p);
+                gifDiv.append(image);
+                $('#gifs').append(gifDiv);
+              
+            // }
+        })
+}
 
-            gifDiv.prepend(p);
-            gifDiv.prepend(personImage);
-
-            $('#gifsView').prepend(gifDiv);
-        }
-    });
-});
-
-// Function for displaying movie data
+//buttons for displaying artists
 function renderButtons() {
-
-    // Deletes the movies prior to adding new movies
-    // (this is necessary otherwise you will have repeat buttons)
     $("#buttonsView").empty();
 
-    // Loops through the array of movies
+    //loops through array of artists
     for (var i = 0; i < artists.length; i++) {
-
-        // Then dynamicaly generates buttons for each movie in the array
-        // This code $("<button>") is all jQuery needs to create the beginning and end tag. (<button></button>)
-        var a = $("<button>");
-        // Adds a class of movie to our button
-        a.addClass("person-btn");
+        var a = $('<button>');
+        // Adds a class of artist to our button
+        a.addClass('artist');
         // Added a data-attribute
-        a.attr("data-name", artists[i]);
+        a.attr('data-name', artists[i]);
         // Provided the initial button text
         a.text(artists[i]);
         // Added the button to the buttons-view div
@@ -56,23 +53,30 @@ function renderButtons() {
     }
 }
 
-// This function handles events where the add movie button is clicked
-$("#add-artist").on("click", function (event) {
-    event.preventDefault();
-    // This line of code will grab the input from the textbox
-    var artist = $("#artists-input").val().trim();
-
-    // The movie from the textbox is then added to our array
+//add new buttons when an artist is searched and submitted from the form
+$('#add-artist').on('click', function (event) {
+    event.prependDefault();
+    var artist = $("#artist-input").val().trim();
     artists.push(artist);
-
-    // Calling renderButtons which handles the processing of our movie array
     renderButtons();
-
 });
+ // Adding click event listeners to all elements with a class of "artist"
+ $(document).on("click", ".artist", displayArtistInfo);
 
-// Adding click event listeners to all elements with a class of "movie"
-$(document).on("click", ".person-btn", displayArtistInfo);
+
+ // Calling the renderButtons function to display the intial buttons
+ renderButtons();
 
 
-// Calling the renderButtons function to display the intial buttons
-renderButtons();
+//image animation on click and still when unclicked
+$(document).on('click', '.searchImage', function () {
+    var state = $(this).attr('data-state');
+    //switching from an animated state to a still state
+    if (state == 'still') {
+        $(this).attr('src', $(this).data('animated'));
+        $(this).attr('data-state', 'animated');
+    } else {
+        $(this).attr('src', $(this).data('still'));
+        $(this).attr('data-state', 'still');
+    }
+})
